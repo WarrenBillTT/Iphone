@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+@import "tailwindcss";
+
+* {
+  cursor: none !important;
+}
+
+body {
+  @apply bg-black text-white font-sans antialiased;
+  margin: 0;
+  padding: 0;
+}
+
+/* Halftone Dot Pattern */
+.halftone-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+  background-size: 8px 8px; /* Adjust the size of the dots / spacing */
+  opacity: 0.8;
+}
+
+/* Spin animation for the badge */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-spin-slow {
+  animation: spin-slow 15s linear infinite;
+}
+
+/* Custom scrollbar to make it look premium (or hide it) */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
