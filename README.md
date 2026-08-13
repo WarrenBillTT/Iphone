@@ -2,6 +2,8 @@
 
 A cinematic, scroll-driven product landing page inspired by Apple's iPhone marketing pages. Built with **React**, **TypeScript**, and canvas-based frame-by-frame scrubbing to simulate a smooth 3D product animation entirely through scroll.
 
+![Image](https://github.com/WarrenBillTT/Iphone/blob/main/iphone.png)
+
 🔗 **Live Demo:** Coming soon
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
