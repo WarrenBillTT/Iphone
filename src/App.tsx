@@ -216,145 +216,181 @@ function App() {
                 </h1>
               </div>
 
+
+
               {/* Material (0.14 - 0.26) */}
               <div 
-                className="absolute inset-0 flex flex-col justify-center items-end text-left px-6 md:px-24"
+                className="absolute inset-0 flex flex-col justify-end items-start px-6 md:px-16 pb-32"
                 style={{ 
-                  opacity: getOpacity(0.14, 0.26),
-                  transform: getTransform(0.14, 0.26, 0.04, 'x-right', 300)
+                  opacity: getOpacity(0.14, 0.26, 0.02),
+                  transform: getTransform(0.14, 0.26, 0.02, 'y', -30)
                 }}
               >
-                <div className="w-full md:w-[45%] lg:w-[35%] mix-blend-difference border-l border-white/20 pl-8">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-6 h-[1px] bg-gray-500"></div>
-                    <div className="font-mono text-[10px] tracking-[0.3em] uppercase text-gray-500">
-                      01 / MATERIAL
-                    </div>
-                  </div>
-                  <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tighter leading-[0.9] uppercase mb-6 text-white">
-                    Forged <br/> Titanium.
+                <div className="w-full md:w-[40%] mix-blend-difference border-t border-white/20 pt-6">
+                  <div className="font-mono text-[10px] tracking-widest uppercase text-gray-400 mb-6">01 — Material</div>
+                  <h2 className="font-display text-6xl md:text-[5.5rem] font-bold tracking-tighter leading-none uppercase text-white mb-6">
+                    Forged <br/> <span className="text-gray-500">Titanium.</span>
                   </h2>
-                  <p className="font-sans text-xs md:text-sm font-light text-gray-400 leading-loose tracking-wider">
-                    Born in the crucible of extreme pressure, the aerospace-grade titanium chassis offers a structural integrity that defies its weight class. It's the same alloy used in missions to Mars, meticulously brushed and contoured to sit seamlessly in the palm of your hand.
+                  <p className="font-sans text-sm font-light text-gray-300 leading-relaxed tracking-wider">
+                    Aerospace-grade titanium chassis. Structural integrity that defies its weight class, meticulously brushed and contoured.
                   </p>
                 </div>
               </div>
 
-              {/* Display (0.28 - 0.40) */}
+              {/* Display & Performance Together (0.28 - 0.52) */}
               <div 
-                className="absolute inset-0 flex flex-col justify-center px-6 md:px-24"
+                className="absolute inset-0 flex justify-between items-center px-6 md:px-12"
                 style={{ 
-                  opacity: getOpacity(0.28, 0.40),
-                  transform: getTransform(0.28, 0.40, 0.04, 'x-left', 300)
+                  opacity: getOpacity(0.28, 0.52, 0.02)
                 }}
               >
-                <div className="w-full md:w-[45%] lg:w-[35%] mix-blend-difference border-l border-white/20 pl-8">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-6 h-[1px] bg-gray-500"></div>
-                    <div className="font-mono text-[10px] tracking-[0.3em] uppercase text-gray-500">
-                      02 / DISPLAY
+                {/* Left: Display */}
+                <div className="w-full md:w-[35%] mix-blend-difference translate-y-[-20%] flex gap-4 md:gap-8 items-start">
+                  <div className="font-mono text-xl md:text-2xl tracking-[0.5em] uppercase text-gray-500 rotate-180 flex-shrink-0" style={{ writingMode: 'vertical-rl' }}>
+                    02 — Display
+                  </div>
+                  <div className="flex flex-col">
+                    <h2 className="font-display text-[4rem] md:text-[4.5rem] font-bold tracking-tighter leading-[0.8] uppercase text-white mb-6">
+                      Brilliant<br/><span className="italic font-light text-gray-400">Fluidity.</span>
+                    </h2>
+                    <p className="font-sans text-xs md:text-sm font-light text-gray-300 leading-relaxed mb-4">
+                      Super Retina XDR at 120Hz. Light and color matching the cadence of your thoughts. It brings everything to life with unprecedented brightness and contrast.
+                    </p>
+                    <p className="font-sans text-xs font-light text-gray-500 leading-relaxed border-l-[3px] border-white/20 pl-4">
+                      Whether you are editing HDR video or playing graphically intensive games, the display pushes boundaries, reaching up to 2000 nits outdoors.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Right: Performance */}
+                <div className="w-full md:w-[32%] mix-blend-difference text-right translate-y-[25%] flex flex-col items-end">
+                  <div className="font-mono text-[10px] tracking-[0.3em] uppercase text-gray-500 mb-6 border-b border-white/30 pb-4 w-full">03 — Performance Architecture</div>
+                  <h2 className="font-display text-6xl md:text-[5.5rem] font-black tracking-tighter leading-[0.85] uppercase text-white mb-6">
+                    Defies<br/>Logic.
+                  </h2>
+                  <p className="font-sans text-xs md:text-sm font-light text-gray-400 leading-relaxed mb-6">
+                    The A17 Pro chip orchestrates billions of operations in a fraction of a millisecond. A massive leap in graphics capability, unlocking new gaming experiences.
+                  </p>
+                  <div className="flex justify-end gap-3 w-full">
+                    <div className="border border-white/20 p-4 w-1/2 text-center bg-white/5 backdrop-blur-sm">
+                      <div className="font-display text-2xl md:text-3xl font-bold text-white mb-1">6-Core</div>
+                      <div className="text-[9px] md:text-[10px] text-gray-400 uppercase tracking-widest">GPU Design</div>
+                    </div>
+                    <div className="border border-white/20 p-4 w-1/2 text-center bg-white/5 backdrop-blur-sm">
+                      <div className="font-display text-2xl md:text-3xl font-bold text-white mb-1">4x Faster</div>
+                      <div className="text-[9px] md:text-[10px] text-gray-400 uppercase tracking-widest">Ray Tracing</div>
                     </div>
                   </div>
-                  <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tighter leading-[0.9] uppercase mb-6 text-white">
-                    Brilliant <br/> Fluidity.
-                  </h2>
-                  <p className="font-sans text-xs md:text-sm font-light text-gray-400 leading-loose tracking-wider">
-                    Your window into infinite possibilities. The Super Retina XDR display dances at a flawless 120Hz, bending light and color to match the cadence of your thoughts. It's not just a screen; it's an expansive canvas where every pixel breathes with breathtaking luminescence.
-                  </p>
                 </div>
               </div>
 
-              {/* Performance (0.42 - 0.54) */}
+              {/* Sensor & Specs (0.55 - 0.70) */}
               <div 
-                className="absolute inset-0 flex flex-col justify-center items-end text-left px-6 md:px-24"
+                className="absolute inset-0 flex flex-col justify-center px-6 md:px-12"
                 style={{ 
-                  opacity: getOpacity(0.42, 0.54),
-                  transform: getTransform(0.42, 0.54, 0.04, 'x-right', 300)
+                  opacity: getOpacity(0.55, 0.70, 0.02)
                 }}
               >
-                <div className="w-full md:w-[45%] lg:w-[35%] mix-blend-difference border-l border-white/20 pl-8">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-6 h-[1px] bg-gray-500"></div>
-                    <div className="font-mono text-[10px] tracking-[0.3em] uppercase text-gray-500">
-                      03 / PERFORMANCE
+                <div className="w-full h-full mix-blend-difference flex justify-between items-center relative">
+                  {/* Left: Sensor description */}
+                  <div className="w-full md:w-[35%] flex flex-col">
+                    <div className="font-mono text-[10px] tracking-widest uppercase text-gray-500 mb-2 border-l-[3px] border-white pl-4">04 — Sensor</div>
+                    <h2 className="font-display text-[5.5rem] md:text-[7rem] font-bold tracking-tighter leading-[0.85] uppercase text-white mb-8">
+                      Capture<br/><span className="text-gray-500 text-5xl italic font-light">Reality.</span>
+                    </h2>
+                    <p className="font-sans text-xs md:text-sm font-light text-gray-300 leading-relaxed mb-6">
+                      An advanced 48-megapixel sensor drinks in photons with unprecedented greed, freezing microscopic details and fleeting emotions. It captures the world not just as it is, but as you remember it, raw, vivid, and unforgivingly real.
+                    </p>
+                    <p className="font-sans text-[11px] md:text-xs font-light text-gray-500 leading-relaxed pl-6 border-l border-gray-600">
+                      With the new Photonic Engine powered by the neural engine, low-light details emerge from the shadows. The dynamic range is so vast it rivals professional cinema cameras, giving you unmatched creative control.
+                    </p>
+                  </div>
+
+                  {/* Right: Specification Grid (Small, Far Right) */}
+                  <div className="absolute right-0 md:right-4 w-[40%] md:w-[28%] border-t border-white/20 pt-6 transform translate-y-16">
+                    <div className="font-mono text-[9px] tracking-[0.2em] text-gray-500 mb-6 uppercase flex justify-between items-center">
+                      <span>Specifications</span>
+                      <span className="h-[1px] bg-gray-500 flex-1 mx-4"></span>
+                      <span>/ 04</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-y-6 gap-x-4">
+                      <div>
+                        <div className="font-sans text-[9px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Main Sensor</div>
+                        <div className="font-sans text-[11px] font-bold text-white uppercase">48 Megapixels</div>
+                      </div>
+                      <div>
+                        <div className="font-sans text-[9px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Aperture</div>
+                        <div className="font-sans text-[11px] font-bold text-white uppercase">f/1.78</div>
+                      </div>
+                      <div>
+                        <div className="font-sans text-[9px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Pixel Size</div>
+                        <div className="font-sans text-[11px] font-bold text-white uppercase">1.22µm Quad</div>
+                      </div>
+                      <div>
+                        <div className="font-sans text-[9px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Stabilization</div>
+                        <div className="font-sans text-[11px] font-bold text-white uppercase">Sensor-Shift</div>
+                      </div>
+                      <div>
+                        <div className="font-sans text-[9px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Telephoto</div>
+                        <div className="font-sans text-[11px] font-bold text-white uppercase">5X Optical</div>
+                      </div>
+                      <div>
+                        <div className="font-sans text-[9px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Ultra Wide</div>
+                        <div className="font-sans text-[11px] font-bold text-white uppercase">12 MP</div>
+                      </div>
                     </div>
                   </div>
-                  <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tighter leading-[0.9] uppercase mb-6 text-white">
-                    Defies <br/> Logic.
-                  </h2>
-                  <p className="font-sans text-xs md:text-sm font-light text-gray-400 leading-loose tracking-wider">
-                    The heartbeat of a supercomputer, miniaturized. The A17 Pro chip orchestrates billions of operations in a fraction of a millisecond. With hardware-accelerated ray tracing, light and shadow play out in real-time, bringing console-tier immersion into the wild.
-                  </p>
                 </div>
               </div>
 
-              {/* Sensor (0.56 - 0.68) */}
+              {/* Optics (0.73 - 0.83) */}
               <div 
-                className="absolute inset-0 flex flex-col justify-center px-6 md:px-24"
+                className="absolute inset-0 flex flex-col justify-center items-end px-6 md:px-12 overflow-hidden"
                 style={{ 
-                  opacity: getOpacity(0.56, 0.68),
-                  transform: getTransform(0.56, 0.68, 0.04, 'x-left', 300)
+                  opacity: getOpacity(0.73, 0.83, 0.02)
                 }}
               >
-                <div className="w-full md:w-[45%] lg:w-[35%] mix-blend-difference border-l border-white/20 pl-8">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-6 h-[1px] bg-gray-500"></div>
-                    <div className="font-mono text-[10px] tracking-[0.3em] uppercase text-gray-500">
-                      04 / SENSOR
-                    </div>
+                <div className="w-full md:w-[35%] mix-blend-difference text-right flex flex-col items-end relative mr-4 md:mr-12">
+                  <div className="font-display font-black text-white/5 text-[12rem] md:text-[14rem] leading-[0.7] tracking-tighter absolute right-[-5%] top-1/2 -translate-y-1/2 -z-10 select-none pointer-events-none">
+                    5X
                   </div>
-                  <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tighter leading-[0.9] uppercase mb-6 text-white">
-                    Capture <br/> Reality.
-                  </h2>
-                  <p className="font-sans text-xs md:text-sm font-light text-gray-400 leading-loose tracking-wider">
-                    Time is fleeting, but light is eternal. An advanced 48-megapixel sensor drinks in photons with unprecedented greed, freezing microscopic details and fleeting emotions. It captures the world not just as it is, but as you remember it, raw, vivid, and unforgivingly real.
-                  </p>
+                  
+                  <div className="w-full border-b-[2px] border-white/20 pb-3 mb-6 flex justify-between items-end">
+                    <h2 className="font-display text-[3.5rem] md:text-[5rem] font-bold tracking-tighter leading-[0.85] uppercase text-white m-0 text-left">
+                      Go<br/>Further.
+                    </h2>
+                    <div className="font-mono text-[9px] tracking-widest uppercase text-gray-400 rotate-90 origin-bottom-right translate-y-[10px]">05 — Optics</div>
+                  </div>
+                  
+                  <div className="w-full flex gap-4 md:gap-6">
+                    <div className="flex-1 text-right">
+                      <p className="font-sans text-[10px] md:text-xs font-light text-gray-300 leading-relaxed mb-3">
+                        Space is no longer a barrier. A revolutionary tetraprism lens folds light upon itself four times over, delivering a flawless 5x optical zoom without the traditional bulk. 
+                      </p>
+                      <p className="font-sans text-[9px] md:text-[10px] font-light text-gray-500 leading-relaxed">
+                        Stand back, and yet, stand closer. It's a masterclass in optical engineering that brings the horizon to your fingertips, backed by our most advanced 3D sensor-shift optical image stabilization module ever created.
+                      </p>
+                    </div>
+                    <div className="w-[3px] bg-white h-auto rounded-full"></div>
+                  </div>
                 </div>
               </div>
 
-              {/* Optics (0.70 - 0.82) */}
+              {/* Connectivity (0.86 - 1.0) */}
               <div 
-                className="absolute inset-0 flex flex-col justify-center items-end text-left px-6 md:px-24"
+                className="absolute inset-0 flex flex-col justify-center items-start px-6 md:px-16"
                 style={{ 
-                  opacity: getOpacity(0.70, 0.82),
-                  transform: getTransform(0.70, 0.82, 0.04, 'x-right', 300)
+                  opacity: getOpacity(0.86, 1.0, 0.02)
                 }}
               >
-                <div className="w-full md:w-[45%] lg:w-[35%] mix-blend-difference border-l border-white/20 pl-8">
+                <div className="w-full md:w-[40%] mix-blend-difference border-l-[1px] border-white/30 pl-8">
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="w-6 h-[1px] bg-gray-500"></div>
-                    <div className="font-mono text-[10px] tracking-[0.3em] uppercase text-gray-500">
-                      05 / OPTICS
-                    </div>
+                    <div className="font-mono text-[10px] tracking-[0.2em] text-gray-400 uppercase">06 / Connectivity</div>
                   </div>
-                  <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tighter leading-[0.9] uppercase mb-6 text-white">
-                    Go <br/> Further.
+                  <h2 className="font-display text-5xl md:text-[5.5rem] font-black tracking-tighter leading-[0.85] uppercase mb-8 text-white">
+                    UNIVERSAL<br/>STANDARD.
                   </h2>
-                  <p className="font-sans text-xs md:text-sm font-light text-gray-400 leading-loose tracking-wider">
-                    Space is no longer a barrier. A revolutionary tetraprism lens folds light upon itself, delivering a flawless 5x optical zoom without the bulk. Stand back, and yet, stand closer. It's a masterclass in optical engineering that brings the horizon to your fingertips.
-                  </p>
-                </div>
-              </div>
-
-              {/* Connectivity (0.84 - 1.0) */}
-              <div 
-                className="absolute inset-0 flex flex-col justify-center px-6 md:px-24"
-                style={{ 
-                  opacity: getOpacity(0.84, 1.0),
-                  transform: getTransform(0.84, 1.0, 0.04, 'x-left', 300)
-                }}
-              >
-                <div className="w-full md:w-[45%] lg:w-[35%] mix-blend-difference border-l border-white/20 pl-8">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-6 h-[1px] bg-gray-500"></div>
-                    <div className="font-mono text-[10px] tracking-[0.3em] uppercase text-gray-500">
-                      06 / CONNECTIVITY
-                    </div>
-                  </div>
-                  <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tighter leading-[0.9] uppercase mb-6 text-white">
-                    Universal <br/> Standard.
-                  </h2>
-                  <p className="font-sans text-xs md:text-sm font-light text-gray-400 leading-loose tracking-wider">
+                  <p className="font-sans text-sm font-light text-gray-300 leading-[2] tracking-wide">
                     The era of waiting is over. Embrace the sheer velocity of USB-C and Wi-Fi 6E. Whether you are transferring gigabytes of ProRes cinematic footage or streaming uncompressed high-fidelity audio, the pipeline is wider, faster, and utterly uncompromising.
                   </p>
                 </div>
@@ -370,11 +406,25 @@ function App() {
         SECTION 2: SOLID CONTENT BLOCKS (NO iPHONE)
         ========================================================
       */}
-      <div className="w-full bg-[#050505] relative z-20 flex flex-col items-center border-t border-white/10 shadow-[0_-20px_50px_rgba(0,0,0,1)]">
+      <div className="w-full bg-[#050505] relative z-20 flex flex-col items-center border-t border-white/10 shadow-[0_-20px_50px_rgba(0,0,0,1)] overflow-hidden">
         
+        {/* Dynamic Background Elements */}
+        <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center">
+          {/* Subtle slow pulsing glows */}
+          <div className="absolute top-0 left-[-10%] w-[70vw] h-[70vw] rounded-full bg-blue-500/5 blur-[150px] animate-pulse" style={{ animationDuration: '10s' }}></div>
+          <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-purple-500/5 blur-[150px] animate-pulse" style={{ animationDuration: '14s', animationDelay: '3s' }}></div>
+          <div className="absolute top-[40%] right-[30%] w-[40vw] h-[40vw] rounded-full bg-white/5 blur-[120px] animate-pulse" style={{ animationDuration: '8s', animationDelay: '1s' }}></div>
+          
+          {/* Premium Grid Pattern Overlay */}
+          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)', backgroundSize: '40px 40px', backgroundPosition: 'center center' }}></div>
+          
+          {/* Vignette to fade edges to black */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,#050505_100%)]"></div>
+        </div>
+
         {/* Block A */}
-        <div className="w-full flex flex-col items-center text-center py-48 px-6 md:px-16">
-           <h2 className="font-display text-5xl md:text-7xl leading-[0.9] font-bold tracking-tighter uppercase mb-6 text-white">
+        <div className="w-full flex flex-col items-center text-center py-48 px-6 md:px-16 relative z-10">
+           <h2 className="font-display text-5xl md:text-7xl leading-[0.9] font-bold tracking-tighter uppercase mb-6 text-white drop-shadow-2xl">
              NOT JUST<br/>A PHONE.
            </h2>
            <p className="font-sans text-xs md:text-sm font-light text-gray-400 max-w-2xl leading-loose tracking-wider">
@@ -383,7 +433,7 @@ function App() {
         </div>
 
         {/* Block B (Finale CTA) */}
-        <div className="w-full min-h-screen flex flex-col items-center justify-center pb-24 px-6 md:px-16">
+        <div className="w-full min-h-screen flex flex-col items-center justify-center pb-24 px-6 md:px-16 relative z-10">
            <h1 className="font-display text-[5rem] md:text-[13rem] font-bold tracking-tighter leading-none uppercase mb-16 text-white drop-shadow-[0_0_50px_rgba(255,255,255,0.1)] mix-blend-screen text-center">
              BEYOND.
            </h1>
