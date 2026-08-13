@@ -261,7 +261,7 @@ function App() {
                 </div>
 
                 {/* Right: Performance */}
-                <div className="w-[85%] md:w-[32%] mix-blend-difference text-left md:text-right md:translate-y-[25%] flex flex-col items-start md:items-end self-end">
+                <div className="w-[85%] md:w-[32%] mix-blend-difference text-left md:text-right md:translate-y-[15%] flex flex-col items-start md:items-end self-end md:self-center mt-12 md:mt-0">
                   <div className="font-mono text-[10px] tracking-[0.3em] uppercase text-gray-500 mb-3 md:mb-6 border-b border-white/30 pb-2 md:pb-4 w-full">03 — Performance Architecture</div>
                   <h2 className="font-display text-[3.5rem] md:text-[5.5rem] font-black tracking-tighter leading-[0.85] uppercase text-white mb-3 md:mb-6">
                     Defies<br/>Logic.
