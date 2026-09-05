@@ -95,8 +95,9 @@ Iphone/
 ## Notes
 
 - The animation frames in `public/frames/` are sourced from a GIF-to-frames conversion (`ezgif-frame-XXX.jpg`) and total ~294 images keep this in mind for repo size and load performance.
+- The source animation/GIF used to generate these frames is from this video: [YouTube](https://www.youtube.com/watch?v=VQjqt7ualxY). All rights to the original footage belong to its respective owner/creator.
 - This project is a design/animation study inspired by Apple's marketing pages and is not affiliated with or endorsed by Apple Inc.
 
 ## License
 
-This project was built for personal/educational use as a front-end animation study. Feel free to use it as a reference, but please don't copy it identically for your own portfolio.
+This project was built for personal/educational use as a front-end animation study. The code (React/TypeScript/Vite/Tailwind) is free to use as reference. The image frames in `public/frames/` are derived from third-party footage (see Notes above) and are **not** covered by this license, please don't redistribute them or use them commercially. Please don't copy the project identically for your own portfolio.
