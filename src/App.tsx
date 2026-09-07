@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Lenis from 'lenis';
 import ScrollSequence from './components/ScrollSequence';
 
