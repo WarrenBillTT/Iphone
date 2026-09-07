@@ -4,7 +4,7 @@ A cinematic, scroll-driven product landing page inspired by Apple's iPhone marke
 
 ![Image](https://github.com/WarrenBillTT/Iphone/blob/main/iphone.png)
 
-🔗 **Live Demo:** Coming soon
+🔗 **Live Demo:** https://iphone-wb.vercel.app/
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)
