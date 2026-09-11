@@ -1,4 +1,4 @@
-# Beyond. Apple-Style Scroll Product Page
+# Iphone 11 Pro Max
 
 A cinematic, scroll-driven product landing page inspired by Apple's iPhone marketing pages. Built with **React**, **TypeScript**, and canvas-based frame-by-frame scrubbing to simulate a smooth 3D product animation entirely through scroll.
 
@@ -22,7 +22,7 @@ Key features:
 - **Buttery Smooth Scrolling**: powered by [Lenis](https://github.com/darkroomengineering/lenis) for inertia-based smooth scroll
 - **Kinetic Typography**: section copy (Material, Display, Performance, Sensor, Optics, Connectivity) fades and slides in/out in sync with scroll progress via custom opacity/transform helpers
 - **Custom Cursor**: a blend-mode cursor that expands on hover over interactive elements
-- **Fixed UI Frame**: floating pill navbar, side annotations (`48MP SYSTEM`, `A17 PRO`), and a footer with a live scroll-progress percentage
+- **Fixed UI Frame**: floating pill navbar, side annotations (`TRIPLE 12MP`, `A13 BIONIC`), and a footer with a live scroll-progress percentage
 - **Fullscreen Menu Overlay**: animated navigation menu (Models, Specifications, Gallery, Buy)
 - **Responsive Canvas Rendering**: frames are drawn with device-pixel-ratio scaling and `object-fit: cover`-style positioning for crisp visuals on any screen
 

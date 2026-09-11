@@ -1,8 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import Lenis from 'lenis';
 import ScrollSequence from './components/ScrollSequence';
 
-// Custom Cursor Component
 const CustomCursor = () => {
   const [position, setPosition] = useState({ x: -100, y: -100 });
   const [isHovering, setIsHovering] = useState(false);
@@ -10,21 +9,14 @@ const CustomCursor = () => {
   useEffect(() => {
     const updatePosition = (e: MouseEvent) => {
       setPosition({ x: e.clientX, y: e.clientY });
-      
-      const target = e.target as HTMLElement;
-      if (target.closest('button, a, [class*="cursor-pointer"]')) {
-        setIsHovering(true);
-      } else {
-        setIsHovering(false);
-      }
+      setIsHovering(!!(e.target as HTMLElement).closest('button, a, [class*="cursor-pointer"]'));
     };
-
     window.addEventListener('mousemove', updatePosition);
     return () => window.removeEventListener('mousemove', updatePosition);
   }, []);
 
   return (
-    <div 
+    <div
       className="fixed top-0 left-0 pointer-events-none z-[10000] mix-blend-difference hidden md:block"
       style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
     >
@@ -49,331 +41,397 @@ function App() {
     const onScroll = () => {
       const html = document.documentElement;
       const scrollHeight = html.scrollHeight - window.innerHeight;
-      const currentProgress = Math.max(0, Math.min(1, html.scrollTop / scrollHeight));
-      setProgress(currentProgress);
+      setProgress(Math.max(0, Math.min(1, html.scrollTop / scrollHeight)));
     };
 
     lenis.on('scroll', onScroll);
     onScroll();
 
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
+    function raf(time: number) { lenis.raf(time); requestAnimationFrame(raf); }
     requestAnimationFrame(raf);
-
-    return () => {
-      lenis.destroy();
-    };
+    return () => { lenis.destroy(); };
   }, []);
 
-  // Opacity helper
-  const getOpacity = (start: number, end: number, fadeLen: number = 0.04) => {
-    if (progress < start - fadeLen) return 0;
-    if (progress >= start - fadeLen && progress < start) {
-      return (progress - (start - fadeLen)) / fadeLen;
-    }
-    if (progress >= start && progress <= end) return 1;
-    if (progress > end && progress <= end + fadeLen) {
-      return 1 - ((progress - end) / fadeLen);
-    }
-    return 0;
-  };
+  // Easing
+  const ease = (t: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, t)), 3);
 
-  // Kinetic Transform helper
-  const getTransform = (start: number, end: number, fadeLen: number = 0.04, direction: 'y' | 'x-left' | 'x-right' = 'y', offset = 100) => {
-    let p = 0;
-    if (progress < start - fadeLen) {
-      p = 1;
-    } else if (progress >= start - fadeLen && progress < start) {
-      p = 1 - (progress - (start - fadeLen)) / fadeLen;
-    } else if (progress >= start && progress <= end) {
-      p = 0;
-    } else if (progress > end && progress <= end + fadeLen) {
-      p = -(progress - end) / fadeLen; // Negative for continuous motion
+  // Fade in/out opacity + enter/exit values
+  const getState = (start: number, end: number, fade = 0.035) => {
+    let opacity = 0, enter = 0, exit = 0;
+    if (progress < start - fade) {
+      /* hidden */
+    } else if (progress < start) {
+      enter = ease((progress - (start - fade)) / fade);
+      opacity = enter;
+    } else if (progress <= end) {
+      enter = 1; opacity = 1;
+    } else if (progress <= end + fade) {
+      enter = 1;
+      exit = ease((progress - end) / fade);
+      opacity = 1 - exit;
     } else {
-      p = -1;
+      enter = 1; exit = 1;
     }
-
-    if (direction === 'y') return `translateY(${p * offset}px)`;
-    if (direction === 'x-left') return `translateX(${p * -offset}px)`; // Slide in from left, out to right
-    if (direction === 'x-right') return `translateX(${p * offset}px)`; // Slide in from right, out to left
-    return `translateY(${p * offset}px)`;
+    return { opacity, enter, exit };
   };
+
+  // For STICKY sections: subtle parallax float (small movement)
+  const getFloat = (start: number, end: number, px = 30) => {
+    if (progress <= start) return px;
+    if (progress >= end) return -px;
+    return px - ((progress - start) / (end - start)) * px * 2;
+  };
+
+  // For SCROLL sections: simulates natural page scrolling inside sticky container
+  // Text travels from below viewport → visible → above viewport
+  const getScroll = (start: number, end: number, travel = 500) => {
+    const mid = (start + end) / 2;
+    const half = (end - start) / 2;
+    const t = Math.max(-1, Math.min(1, (progress - mid) / half));
+    return -t * travel;
+  };
+
+  const intro = getState(0,    0.12, 0.03);
+  const s1    = getState(0.14, 0.27, 0.035);
+  const s2    = getState(0.28, 0.52, 0.035);
+  const s3    = getState(0.30, 0.52, 0.035);
+  const s4    = getState(0.54, 0.70, 0.035);
+  const s5    = getState(0.72, 0.82, 0.035);
+  const s6    = getState(0.83, 0.96, 0.035);
 
   return (
-    <div className="relative w-full bg-[#0a0a0a] text-white font-sans selection:bg-white selection:text-black">
-      
-      {/* Visual Additions */}
+    <div className="relative w-full bg-[#0a0a0a] text-[#f0f0f0] font-body selection:bg-white selection:text-black">
+
+      <div className="noise-overlay fixed inset-0 pointer-events-none z-[60] opacity-[0.03]"></div>
       <CustomCursor />
-      
-      {/* Grid Lines */}
-      <div className="fixed inset-0 pointer-events-none z-0 flex justify-around opacity-[0.03]">
-        <div className="w-[1px] h-full bg-white"></div>
-        <div className="w-[1px] h-full bg-white hidden md:block"></div>
-        <div className="w-[1px] h-full bg-white hidden md:block"></div>
-        <div className="w-[1px] h-full bg-white hidden lg:block"></div>
-        <div className="w-[1px] h-full bg-white hidden lg:block"></div>
-        <div className="w-[1px] h-full bg-white"></div>
-      </div>
-      <div className="fixed inset-0 pointer-events-none z-0 flex flex-col justify-around opacity-[0.03]">
-        <div className="w-full h-[1px] bg-white"></div>
-        <div className="w-full h-[1px] bg-white hidden md:block"></div>
-        <div className="w-full h-[1px] bg-white hidden md:block"></div>
-        <div className="w-full h-[1px] bg-white hidden lg:block"></div>
-        <div className="w-full h-[1px] bg-white hidden lg:block"></div>
-        <div className="w-full h-[1px] bg-white"></div>
+
+      <div className="fixed inset-0 pointer-events-none z-0 flex justify-around opacity-[0.04]">
+        {[...Array(5)].map((_, i) => <div key={i} className="w-[1px] h-full bg-white"></div>)}
       </div>
 
-      {/* --- UI FRAME (Always Fixed) --- */}
+      {/* NAV */}
       <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[90%] max-w-4xl p-4 px-6 flex justify-between items-center z-[100] pointer-events-auto bg-[#0a0a0a]/70 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl">
         <img src="/apple.svg" alt="Apple Logo" className="h-5 w-auto cursor-pointer hover:opacity-70 transition-opacity" />
-        
-        {/* Improved Font for Center Title */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-sans font-light text-[11px] tracking-[0.4em] uppercase hidden md:block text-gray-300">
-          THE NEW STANDARD
+          IPHONE 11 PRO MAX
         </div>
-
-        <div 
-          className="flex gap-2 flex-col cursor-pointer p-2 z-[110]"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        >
+        <div className="flex gap-2 flex-col cursor-pointer p-2 z-[110]" onClick={() => setIsMenuOpen(!isMenuOpen)}>
           <div className={`w-6 h-[2px] bg-white transition-all duration-300 origin-center ${isMenuOpen ? 'rotate-45 translate-y-[5px]' : ''}`}></div>
           <div className={`w-6 h-[2px] bg-white transition-all duration-300 origin-center ${isMenuOpen ? '-rotate-45 -translate-y-[5px]' : ''}`}></div>
         </div>
       </nav>
 
-      {/* Fullscreen Menu Overlay */}
-      <div 
-        className={`fixed inset-0 bg-[#050505] z-[90] flex flex-col items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-      >
+      {/* Menu overlay */}
+      <div className={`fixed inset-0 bg-[#050505] z-[90] flex flex-col items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
         <ul className="flex flex-col gap-12 text-center font-display text-4xl md:text-6xl font-bold uppercase tracking-tighter">
-          {['Models', 'Specifications', 'Gallery', 'Buy'].map((item, i) => (
-            <li 
-              key={item} 
-              style={{ transitionDelay: isMenuOpen ? `${i * 100 + 100}ms` : '0ms' }} 
-              className={`transition-all duration-500 hover:text-gray-400 cursor-pointer ${isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}
-            >
-              {item}
-            </li>
+          {['Overview', 'Camera System', 'A13 Bionic', 'Display', 'Tech Specs'].map((item, i) => (
+            <li key={item} style={{ transitionDelay: isMenuOpen ? `${i * 80 + 100}ms` : '0ms' }}
+              className={`transition-all duration-500 hover:text-white/40 cursor-pointer ${isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
+              onClick={() => setIsMenuOpen(false)}>{item}</li>
           ))}
         </ul>
       </div>
 
-      <div className="fixed right-6 top-1/2 -translate-y-1/2 flex-col gap-12 z-[100] pointer-events-none mix-blend-difference hidden md:flex">
-        <div className="font-mono text-[10px] tracking-[0.3em] rotate-90 origin-right uppercase whitespace-nowrap">
-          [ 48MP SYSTEM ]
-        </div>
-        <div className="font-mono text-[10px] tracking-[0.3em] rotate-90 origin-right uppercase whitespace-nowrap mt-24">
-          ( A17 PRO )
-        </div>
+      {/* Side indicators */}
+      <div className="fixed right-8 top-1/2 -translate-y-1/2 flex-col gap-16 z-[100] pointer-events-none mix-blend-difference hidden md:flex">
+        <div className="font-heading text-[9px] tracking-[0.3em] font-medium rotate-90 origin-right uppercase whitespace-nowrap text-white/40">TRIPLE 12MP SYSTEM</div>
+        <div className="font-heading text-[9px] tracking-[0.3em] font-medium rotate-90 origin-right uppercase whitespace-nowrap mt-28 text-white/40">A13 BIONIC CHIP</div>
       </div>
 
-      <footer className="fixed bottom-0 left-0 w-full p-6 flex justify-between items-end z-[100] pointer-events-none mix-blend-difference text-white">
-        <div className="font-mono text-xs tracking-widest uppercase text-gray-400">
-          [ SCROLL TO EXPLORE ]
-        </div>
-        <div className="absolute left-1/2 bottom-6 -translate-x-1/2 font-mono text-xs tracking-widest hidden md:block">
+      {/* Footer */}
+      <footer className="fixed bottom-0 left-0 w-full p-6 px-8 md:px-12 flex justify-between items-end z-[100] pointer-events-none mix-blend-difference text-white">
+        <div className="font-heading text-[9px] md:text-[10px] tracking-[0.25em] uppercase text-white/50 font-medium">SCROLL TO EXPLORE</div>
+        <div className="absolute left-1/2 bottom-6 -translate-x-1/2 font-heading text-[10px] tracking-[0.2em] font-medium hidden md:block text-white/60">
           {Math.round(progress * 100)}%
         </div>
-        <div className="font-mono text-xs tracking-widest uppercase text-right text-gray-400">
-          AVAILABLE <br/> 2026
-        </div>
+        <div className="font-heading text-[9px] md:text-[10px] tracking-[0.25em] uppercase text-right text-white/50 font-medium">PRO MAX EDITION</div>
       </footer>
-      {/* --- END UI FRAME --- */}
 
-      {/* 
-        ========================================================
-        SECTION 1: THE STICKY iPHONE SEQUENCE
-        ========================================================
-      */}
+      {/* ═══ SECTION 1: STICKY iPHONE SEQUENCE ═══ */}
       <div className="relative z-10 h-[1400vh] w-full">
         <div className="sticky top-0 h-screen w-full overflow-hidden">
-          {/* CRITICAL FIX: relative wrapper so absolute children size correctly */}
           <div className="relative w-full h-full">
-            
+
             <div className="absolute inset-0 w-full h-full">
-              {/* iPhone animation from beginning to end */}
               <ScrollSequence progress={progress} />
             </div>
 
-            {/* Kinetic Typography Overlays */}
             <div className="absolute inset-0 w-full h-full z-50 pointer-events-none">
-              
-              {/* Intro (0.00 - 0.12) */}
-              <div 
+
+              {/* ═══ INTRO (0.00–0.12) ═══  MODE: STICKY — slides in from left, stays */}
+              <div
                 className="absolute inset-0 flex flex-col justify-center px-6 md:px-16"
-                style={{ 
-                  opacity: getOpacity(0, 0.12),
-                  transform: getTransform(0, 0.12, 0.04, 'x-left', 300)
+                style={{
+                  opacity: intro.opacity,
+                  transform: `translate3d(${(1 - intro.enter) * -300 - intro.exit * 200}px, 0, 0)`,
                 }}
               >
-                <div className="font-mono text-sm tracking-[0.3em] uppercase mb-4 text-gray-400 mix-blend-difference">
-                  [ INTRODUCTION ]
+                <div className="font-heading text-xs md:text-sm tracking-[0.3em] uppercase text-white/50 font-medium mb-6 mix-blend-difference">
+                  IPHONE 11 PRO MAX
                 </div>
-                <h1 className="font-display text-7xl md:text-[10rem] font-bold tracking-tighter leading-[0.85] uppercase max-w-6xl mix-blend-difference mb-8 text-white">
+                <h1 className="font-display text-7xl md:text-[10rem] font-bold tracking-tighter leading-[0.85] uppercase max-w-5xl mix-blend-difference mb-8 text-white select-none drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)]">
                   Goes all in. <br/> Or not at all.
                 </h1>
+                <div className="w-16 h-[2px] bg-gradient-to-r from-white to-transparent mb-6 mix-blend-difference"></div>
+                <p className="font-heading text-sm md:text-base font-light text-white/70 max-w-sm tracking-wide leading-relaxed mix-blend-difference">
+                  The first iPhone powerful enough to be called Pro.
+                  Re-engineered from the inside out.
+                </p>
               </div>
 
 
-
-              {/* Material (0.14 - 0.26) */}
-              <div 
-                className="absolute inset-0 flex flex-col justify-end items-start px-6 md:px-16 pb-20 md:pb-32"
-                style={{ 
-                  opacity: getOpacity(0.14, 0.26, 0.02),
-                  transform: getTransform(0.14, 0.26, 0.02, 'y', -30)
-                }}
+              {/* ═══ 01 MATERIAL (0.14–0.27) ═══  MODE: SCROLL — text moves with page like regular website */}
+              <div
+                className="absolute inset-0 flex flex-col justify-center items-start px-8 md:px-16"
+                style={{ opacity: s1.opacity }}
               >
-                <div className="w-full md:w-[40%] mix-blend-difference border-t border-white/20 pt-6">
-                  <div className="font-mono text-[10px] tracking-widest uppercase text-gray-400 mb-4 md:mb-6">01 — Material</div>
-                  <h2 className="font-display text-5xl md:text-[5.5rem] font-bold tracking-tighter leading-none uppercase text-white mb-4 md:mb-6">
-                    Forged <br/> <span className="text-gray-500">Titanium.</span>
+                <div
+                  className="mix-blend-difference max-w-[320px] md:max-w-[360px]"
+                  style={{ transform: `translateY(${getScroll(0.14, 0.27, 180)}px)` }}
+                >
+                  <div className="font-heading text-xs md:text-sm tracking-[0.25em] uppercase text-white/50 font-medium mb-3">
+                    01 &ensp; ARCHITECTURE
+                  </div>
+                  {/* Title Style 1: Metallic Stainless Steel Sheen */}
+                  <h2 className="font-display uppercase tracking-tighter leading-[0.85] mb-6 drop-shadow-[0_2px_20px_rgba(0,0,0,0.8)]">
+                    <span className="block text-5xl md:text-6xl lg:text-7xl font-black text-white">SURGICAL</span>
+                    <span className="block text-6xl md:text-7xl lg:text-[7.5rem] font-bold text-transparent bg-clip-text bg-gradient-to-r from-neutral-100 via-neutral-300 to-neutral-500">STEEL.</span>
                   </h2>
-                  <p className="font-sans text-xs md:text-sm font-light text-gray-300 leading-relaxed tracking-wider">
-                    Aerospace-grade titanium chassis. Structural integrity that defies its weight class, meticulously brushed and contoured.
+                  <p className="font-heading text-sm md:text-base font-light text-white/70 leading-relaxed tracking-wide mb-6">
+                    Precision-milled from a single sheet of dual-ion exchange glass with a textured matte finish. Seamlessly bonded to a surgical-grade stainless steel band.
                   </p>
+                  <div className="flex gap-8 border-t border-white/20 pt-5">
+                    <div>
+                      <div className="font-display text-3xl md:text-4xl font-bold text-white tracking-tight">IP68</div>
+                      <div className="text-xs text-white/50 uppercase tracking-wider font-medium mt-1">4M Water Depth</div>
+                    </div>
+                    <div>
+                      <div className="font-display text-3xl md:text-4xl font-bold text-white tracking-tight">Matte</div>
+                      <div className="text-xs text-white/50 uppercase tracking-wider font-medium mt-1">Dual-Ion Glass</div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Display & Performance Together (0.28 - 0.52) */}
-              <div 
-                className="absolute inset-0 flex flex-col md:flex-row justify-between items-start md:items-center px-6 md:px-12 pt-28 pb-20 md:py-0"
-                style={{ 
-                  opacity: getOpacity(0.28, 0.52, 0.02)
-                }}
-              >
-                {/* Left: Display */}
-                <div className="w-[80%] md:w-[35%] mix-blend-difference md:translate-y-[-20%] flex gap-4 md:gap-8 items-start mb-auto md:mb-0">
-                  <div className="font-mono text-xl md:text-2xl tracking-[0.5em] uppercase text-gray-500 rotate-180 flex-shrink-0 hidden md:block" style={{ writingMode: 'vertical-rl' }}>
-                    02 — Display
-                  </div>
-                  <div className="flex flex-col">
-                    <div className="font-mono text-[10px] tracking-widest uppercase text-gray-500 mb-2 md:hidden">02 — Display</div>
-                    <h2 className="font-display text-[3.5rem] md:text-[4.5rem] font-bold tracking-tighter leading-[0.8] uppercase text-white mb-3 md:mb-6">
-                      Brilliant<br/><span className="italic font-light text-gray-400">Fluidity.</span>
-                    </h2>
-                    <p className="font-sans text-xs md:text-sm font-light text-gray-300 leading-relaxed mb-4">
-                      Super Retina XDR at 120Hz. Light and color matching the cadence of your thoughts.
-                    </p>
-                  </div>
-                </div>
 
-                {/* Right: Performance */}
-                <div className="w-[85%] md:w-[32%] mix-blend-difference text-left md:text-right md:translate-y-[15%] flex flex-col items-start md:items-end self-end md:self-center mt-12 md:mt-0">
-                  <div className="font-mono text-[10px] tracking-[0.3em] uppercase text-gray-500 mb-3 md:mb-6 border-b border-white/30 pb-2 md:pb-4 w-full">03 — Performance Architecture</div>
-                  <h2 className="font-display text-[3.5rem] md:text-[5.5rem] font-black tracking-tighter leading-[0.85] uppercase text-white mb-3 md:mb-6">
-                    Defies<br/>Logic.
+              {/* ═══ 02 DISPLAY + 03 SILICON (0.28–0.52) ═══  MODE: STICKY — two panels float in place */}
+              <div
+                className="absolute inset-0 flex flex-col md:flex-row justify-between items-end md:items-center px-8 md:px-14 pb-16 md:pb-0 pt-28 md:pt-0"
+                style={{ opacity: Math.max(s2.opacity, s3.opacity) }}
+              >
+                {/* LEFT: 03 Silicon — STICKY with subtle float UP */}
+                <div
+                  className="mix-blend-difference flex flex-col max-w-[320px] md:max-w-[380px] mb-10 md:mb-0 md:self-start md:mt-[10vh]"
+                  style={{
+                    opacity: s3.opacity,
+                    transform: `translate3d(${(1 - s3.enter) * -60}px, ${getFloat(0.28, 0.52, 25)}px, 0)`,
+                  }}
+                >
+                  <div className="font-heading text-xs md:text-sm tracking-[0.25em] uppercase text-white/50 font-medium mb-3">
+                    03 &ensp; SILICON
+                  </div>
+                  {/* Title Style 3: Architectural Monolith with Monospace Tech Accent */}
+                  <h2 className="font-display uppercase tracking-tighter leading-[0.82] mb-4 drop-shadow-[0_2px_15px_rgba(0,0,0,0.8)]">
+                    <span className="block text-7xl md:text-8xl lg:text-[8.5rem] font-black text-white tracking-tighter">A13</span>
+                    <span className="block text-2xl md:text-3xl lg:text-4xl font-mono font-bold tracking-[0.2em] text-neutral-400">BIONIC.</span>
                   </h2>
-                  <div className="flex justify-start md:justify-end gap-3 w-full">
-                    <div className="border border-white/20 p-2 md:p-4 w-1/2 text-center bg-white/5 backdrop-blur-sm">
-                      <div className="font-display text-xl md:text-3xl font-bold text-white mb-1">6-Core</div>
-                      <div className="text-[8px] md:text-[10px] text-gray-400 uppercase tracking-widest">GPU Design</div>
-                    </div>
-                    <div className="border border-white/20 p-2 md:p-4 w-1/2 text-center bg-white/5 backdrop-blur-sm">
-                      <div className="font-display text-xl md:text-3xl font-bold text-white mb-1">4x Faster</div>
-                      <div className="text-[8px] md:text-[10px] text-gray-400 uppercase tracking-widest">Ray Tracing</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sensor & Specs (0.55 - 0.70) */}
-              <div 
-                className="absolute inset-0 flex flex-col justify-center px-6 md:px-12"
-                style={{ 
-                  opacity: getOpacity(0.55, 0.70, 0.02)
-                }}
-              >
-                <div className="w-full h-full mix-blend-difference flex flex-col md:flex-row justify-between items-start md:items-center relative pt-28 pb-20 md:py-0">
-                  {/* Left: Sensor description */}
-                  <div className="w-full md:w-[35%] flex flex-col mb-auto md:mb-0">
-                    <div className="font-mono text-[10px] tracking-widest uppercase text-gray-500 mb-2 border-l-[3px] border-white pl-4">04 — Sensor</div>
-                    <h2 className="font-display text-[4rem] md:text-[7rem] font-bold tracking-tighter leading-[0.85] uppercase text-white mb-3 md:mb-8">
-                      Capture<br/><span className="text-gray-500 text-3xl md:text-5xl italic font-light">Reality.</span>
-                    </h2>
-                    <p className="font-sans text-xs md:text-sm font-light text-gray-300 leading-relaxed mb-4 md:mb-6 max-w-[80%] md:max-w-full">
-                      An advanced 48-megapixel sensor drinks in photons with unprecedented greed, freezing microscopic details and fleeting emotions.
-                    </p>
-                  </div>
-
-                  {/* Right: Specification Grid (Small, Far Right) */}
-                  <div className="relative md:absolute md:right-4 w-full md:w-[28%] border-t border-white/20 pt-4 md:pt-6 md:transform md:translate-y-16 mt-auto md:mt-0">
-                    <div className="font-mono text-[9px] tracking-[0.2em] text-gray-500 mb-4 md:mb-6 uppercase flex justify-between items-center">
-                      <span>Specifications</span>
-                      <span className="h-[1px] bg-gray-500 flex-1 mx-4 hidden md:block"></span>
-                      <span>/ 04</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-y-4 md:gap-y-6 gap-x-4">
-                      <div>
-                        <div className="font-sans text-[8px] md:text-[9px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Main Sensor</div>
-                        <div className="font-sans text-[10px] md:text-[11px] font-bold text-white uppercase">48 Megapixels</div>
-                      </div>
-                      <div>
-                        <div className="font-sans text-[8px] md:text-[9px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Aperture</div>
-                        <div className="font-sans text-[10px] md:text-[11px] font-bold text-white uppercase">f/1.78</div>
-                      </div>
-                      <div>
-                        <div className="font-sans text-[8px] md:text-[9px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Pixel Size</div>
-                        <div className="font-sans text-[10px] md:text-[11px] font-bold text-white uppercase">1.22µm Quad</div>
-                      </div>
-                      <div>
-                        <div className="font-sans text-[8px] md:text-[9px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Stabilization</div>
-                        <div className="font-sans text-[10px] md:text-[11px] font-bold text-white uppercase">Sensor-Shift</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Optics (0.73 - 0.83) */}
-              <div 
-                className="absolute inset-0 flex flex-col justify-end md:justify-center items-start md:items-end px-6 md:px-12 pb-20 md:pb-0 overflow-hidden"
-                style={{ 
-                  opacity: getOpacity(0.73, 0.83, 0.02)
-                }}
-              >
-                <div className="w-[90%] md:w-[35%] mix-blend-difference text-left md:text-right flex flex-col items-start md:items-end relative md:mr-12">
-                  <div className="font-display font-black text-white/5 text-[8rem] md:text-[14rem] leading-[0.7] tracking-tighter absolute right-0 md:right-[-5%] top-1/2 -translate-y-1/2 -z-10 select-none pointer-events-none hidden md:block">
-                    5X
-                  </div>
-                  
-                  <div className="w-full border-b-[2px] border-white/20 pb-2 md:pb-3 mb-3 md:mb-6 flex justify-between items-end">
-                    <h2 className="font-display text-[3.5rem] md:text-[5rem] font-bold tracking-tighter leading-[0.85] uppercase text-white m-0 text-left">
-                      Go<br/>Further.
-                    </h2>
-                    <div className="font-mono text-[9px] tracking-widest uppercase text-gray-400 rotate-0 md:rotate-90 origin-bottom-right md:translate-y-[10px] mb-2 md:mb-0">05 — Optics</div>
-                  </div>
-                  
-                  <div className="w-full flex flex-col md:flex-row gap-4 md:gap-6">
-                    <div className="flex-1 text-left md:text-right">
-                      <p className="font-sans text-[10px] md:text-xs font-light text-gray-300 leading-relaxed mb-3">
-                        Space is no longer a barrier. A revolutionary tetraprism lens folds light upon itself four times over, delivering a flawless 5x optical zoom without the traditional bulk. 
-                      </p>
-                    </div>
-                    <div className="w-[60%] md:w-[3px] bg-white h-[2px] md:h-auto rounded-full mt-2 md:mt-0"></div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Connectivity (0.86 - 1.0) */}
-              <div 
-                className="absolute inset-0 flex flex-col justify-end md:justify-center items-start px-6 md:px-16 pb-20 md:pb-0"
-                style={{ 
-                  opacity: getOpacity(0.86, 1.0, 0.02)
-                }}
-              >
-                <div className="w-[85%] md:w-[40%] mix-blend-difference border-l-[2px] md:border-l-[1px] border-white/30 pl-6 md:pl-8">
-                  <div className="flex items-center gap-4 mb-3 md:mb-4">
-                    <div className="font-mono text-[10px] tracking-[0.2em] text-gray-400 uppercase">06 / Connectivity</div>
-                  </div>
-                  <h2 className="font-display text-[3.2rem] md:text-[5.5rem] font-black tracking-tighter leading-[0.85] uppercase mb-4 md:mb-8 text-white">
-                    UNIVERSAL<br/>STANDARD.
-                  </h2>
-                  <p className="font-sans text-[11px] md:text-sm font-light text-gray-300 leading-[1.8] md:leading-[2] tracking-wide">
-                    The era of waiting is over. Embrace the sheer velocity of USB-C and Wi-Fi 6E. Whether you are transferring gigabytes of ProRes cinematic footage or streaming uncompressed high-fidelity audio, the pipeline is wider, faster, and utterly uncompromising.
+                  <p className="font-heading text-sm md:text-base font-light text-white/70 leading-relaxed mb-6">
+                    The fastest chip ever in a smartphone. Built on 7-nanometer architecture, fusing machine learning with unprecedented power efficiency.
                   </p>
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-4 border-t border-white/20 pt-5">
+                    <div>
+                      <div className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">8.5B</div>
+                      <div className="text-xs text-white/50 uppercase tracking-wider font-medium mt-1">Transistors</div>
+                    </div>
+                    <div>
+                      <div className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">6-Core</div>
+                      <div className="text-xs text-white/50 uppercase tracking-wider font-medium mt-1">CPU Compute</div>
+                    </div>
+                    <div>
+                      <div className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">4-Core</div>
+                      <div className="text-xs text-white/50 uppercase tracking-wider font-medium mt-1">Metal GPU</div>
+                    </div>
+                    <div>
+                      <div className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">40%</div>
+                      <div className="text-xs text-white/50 uppercase tracking-wider font-medium mt-1">Lower Power</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* RIGHT: 02 Display — STICKY with subtle float DOWN */}
+                <div
+                  className="mix-blend-difference flex flex-col max-w-[320px] md:max-w-[380px] text-right items-end md:self-end md:mb-[10vh]"
+                  style={{
+                    opacity: s2.opacity,
+                    transform: `translate3d(${(1 - s2.enter) * 60}px, ${getFloat(0.28, 0.52, -25)}px, 0)`,
+                  }}
+                >
+                  <div className="font-heading text-xs md:text-sm tracking-[0.25em] uppercase text-white/50 font-medium mb-3">
+                    02 &ensp; DISPLAY
+                  </div>
+                  {/* Title Style 2: Luminous OLED Bloom Headline */}
+                  <h2 className="font-display uppercase tracking-tighter leading-[0.88] mb-4 drop-shadow-[0_2px_15px_rgba(0,0,0,0.8)]">
+                    <span className="block text-3xl md:text-4xl lg:text-5xl font-extrabold text-neutral-300 tracking-tight">SUPER RETINA</span>
+                    <span className="block text-6xl md:text-7xl lg:text-[7.5rem] font-black text-white drop-shadow-[0_0_35px_rgba(255,255,255,0.35)]">XDR.</span>
+                  </h2>
+                  <p className="font-heading text-sm md:text-base font-light text-white/70 leading-relaxed mb-6">
+                    A custom OLED engineered for extreme dynamic range. 2,000,000:1 contrast ratio with color precision that dazzles in direct sunlight.
+                  </p>
+                  <div className="flex gap-8 justify-end border-t border-white/20 pt-5">
+                    <div className="text-right">
+                      <div className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">1,200</div>
+                      <div className="text-xs text-white/50 uppercase tracking-wider font-medium mt-1">Nits Peak</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">458</div>
+                      <div className="text-xs text-white/50 uppercase tracking-wider font-medium mt-1">PPI Density</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">6.5"</div>
+                      <div className="text-xs text-white/50 uppercase tracking-wider font-medium mt-1">OLED Panel</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+
+              {/* ═══ 04 CAMERA (0.54–0.70) ═══  MODE: SCROLL — text scrolls up naturally like regular website */}
+              <div
+                className="absolute inset-0 flex flex-col justify-center px-8 md:px-16"
+                style={{ opacity: s4.opacity }}
+              >
+                <div
+                  className="mix-blend-difference max-w-[320px] md:max-w-[360px]"
+                  style={{ transform: `translateY(${getScroll(0.54, 0.70, 200)}px)` }}
+                >
+                  <div className="font-heading text-xs md:text-sm tracking-[0.25em] uppercase text-white/50 font-medium mb-3">
+                    04 &ensp; PRO CAMERA SYSTEM
+                  </div>
+                  {/* Title Style 4: Optical Contrast — Solid Bold meets Feather-Light Depth */}
+                  <h2 className="font-display uppercase tracking-tighter leading-[0.85] mb-6 drop-shadow-[0_2px_20px_rgba(0,0,0,0.8)]">
+                    <span className="block text-5xl md:text-6xl lg:text-7xl font-black text-white">THREE</span>
+                    <span className="block text-5xl md:text-6xl lg:text-7xl font-light tracking-wider text-white/65">LENSES.</span>
+                  </h2>
+                  <p className="font-heading text-sm md:text-base font-light text-white/70 leading-relaxed mb-6">
+                    The first triple-camera system to combine pro versatility with effortless simplicity. Shoot 4K video at 60 fps across every camera.
+                  </p>
+                  {/* Clean Apple-style Lens Breakdown */}
+                  <div className="flex flex-col border-t border-white/20 divide-y divide-white/10">
+                    <div className="py-3 flex justify-between items-baseline">
+                      <div>
+                        <div className="font-display text-base md:text-lg font-bold text-white uppercase tracking-tight">13mm Ultra Wide</div>
+                        <div className="text-xs text-white/50 mt-0.5">120° Field of View • ƒ2.4</div>
+                      </div>
+                      <div className="font-display text-sm font-semibold text-white/70">12MP</div>
+                    </div>
+                    <div className="py-3 flex justify-between items-baseline">
+                      <div>
+                        <div className="font-display text-base md:text-lg font-bold text-white uppercase tracking-tight">26mm Wide</div>
+                        <div className="text-xs text-white/50 mt-0.5">100% Focus Pixels • ƒ1.8 • OIS</div>
+                      </div>
+                      <div className="font-display text-sm font-semibold text-white/70">12MP</div>
+                    </div>
+                    <div className="py-3 flex justify-between items-baseline">
+                      <div>
+                        <div className="font-display text-base md:text-lg font-bold text-white uppercase tracking-tight">52mm Telephoto</div>
+                        <div className="text-xs text-white/50 mt-0.5">2x Optical Zoom • ƒ2.0 • OIS</div>
+                      </div>
+                      <div className="font-display text-sm font-semibold text-white/70">12MP</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+
+              {/* ═══ 05 OPTICS (0.72–0.82) ═══  MODE: STICKY — fades in on right side, stays */}
+              <div
+                className="absolute inset-0 flex flex-col justify-center items-end px-8 md:px-16"
+                style={{
+                  opacity: s5.opacity,
+                  transform: `translateY(${getFloat(0.72, 0.82, -20)}px)`,
+                }}
+              >
+                <div className="mix-blend-difference flex flex-col max-w-[320px] md:max-w-[360px] text-right items-end relative">
+                  {/* Huge dynamic watermark */}
+                  <div className="font-display font-black text-white/[0.05] text-[9rem] md:text-[15rem] leading-none tracking-tighter absolute -right-6 top-1/2 -translate-y-1/2 select-none pointer-events-none hidden md:block">
+                    4X
+                  </div>
+                  <div className="font-heading text-xs md:text-sm tracking-[0.25em] uppercase text-white/50 font-medium mb-3">
+                    05 &ensp; OPTICS
+                  </div>
+                  {/* Title Style 5: Kinetic Zoom Multiplier */}
+                  <h2 className="font-display uppercase tracking-tighter leading-[0.85] mb-6 drop-shadow-[0_2px_20px_rgba(0,0,0,0.8)]">
+                    <span className="block text-7xl md:text-8xl lg:text-[8.5rem] font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-white/40">4X</span>
+                    <span className="block text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-neutral-300">OPTICAL ZOOM.</span>
+                  </h2>
+                  <p className="font-heading text-sm md:text-base font-light text-white/70 leading-relaxed mb-6">
+                    From 13mm Ultra Wide to 52mm Telephoto. Seamlessly transition across a continuous 4x optical zoom range with zero quality compromise.
+                  </p>
+                  {/* Clean Apple-style Zoom Callouts */}
+                  <div className="flex gap-8 justify-end border-t border-white/20 pt-5">
+                    <div className="text-right">
+                      <div className="font-display text-3xl md:text-4xl font-bold text-white tracking-tight">0.5x</div>
+                      <div className="text-xs text-white/50 uppercase tracking-wider font-medium mt-1">Ultra Wide</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-display text-3xl md:text-4xl font-bold text-white tracking-tight">1x</div>
+                      <div className="text-xs text-white/50 uppercase tracking-wider font-medium mt-1">Wide</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-display text-3xl md:text-4xl font-bold text-white tracking-tight">2x</div>
+                      <div className="text-xs text-white/50 uppercase tracking-wider font-medium mt-1">Telephoto</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+
+              {/* ═══ 06 BATTERY (0.83–0.96) ═══  MODE: SCROLL — Elevated vertical position & smooth glide */}
+              <div
+                className="absolute inset-0 flex flex-col justify-start pt-14 md:pt-16 items-start px-8 md:px-16"
+                style={{ opacity: s6.opacity }}
+              >
+                <div
+                  className="mix-blend-difference max-w-[320px] md:max-w-[360px]"
+                  style={{ transform: `translateY(${getScroll(0.83, 0.96, 40)}px)` }}
+                >
+                  <div className="font-heading text-xs md:text-sm tracking-[0.25em] uppercase text-white/50 font-medium mb-2">
+                    06 &ensp; ENDURANCE
+                  </div>
+                  {/* Title Style 6: Radiant Energy Gradient Headline */}
+                  <h2 className="font-display uppercase tracking-tighter leading-[0.88] mb-4 drop-shadow-[0_2px_20px_rgba(0,0,0,0.8)]">
+                    <span className="block text-5xl md:text-6xl lg:text-[4.8rem] font-black text-white">ALL-DAY</span>
+                    <span className="block text-5xl md:text-6xl lg:text-[4.8rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-white to-neutral-300">POWER.</span>
+                  </h2>
+
+                  {/* Clean Apple Keynote-style Headline Stat */}
+                  <div className="mb-4">
+                    <div className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tighter leading-none">
+                      +5 Hours.
+                    </div>
+                    <div className="font-heading text-xs md:text-sm font-light text-white/80 mt-1">
+                      More battery life than iPhone XS Max.
+                    </div>
+                  </div>
+
+                  <p className="font-heading text-xs md:text-sm font-light text-white/70 leading-relaxed tracking-wide mb-4">
+                    Fast-charge up to 50% in 30 minutes with the 18W adapter in the box. Wi-Fi 6 and Apple U1 Ultra Wideband chip built-in.
+                  </p>
+
+                  <div className="flex gap-6 border-t border-white/20 pt-3">
+                    <div>
+                      <div className="font-display text-xl md:text-2xl font-bold text-white tracking-tight">20h</div>
+                      <div className="text-[9px] md:text-[10px] text-white/50 uppercase tracking-widest font-medium mt-0.5">Video Playback</div>
+                    </div>
+                    <div>
+                      <div className="font-display text-xl md:text-2xl font-bold text-white tracking-tight">18W</div>
+                      <div className="text-[9px] md:text-[10px] text-white/50 uppercase tracking-widest font-medium mt-0.5">Fast Charging</div>
+                    </div>
+                    <div>
+                      <div className="font-display text-xl md:text-2xl font-bold text-white tracking-tight">U1</div>
+                      <div className="text-[9px] md:text-[10px] text-white/50 uppercase tracking-widest font-medium mt-0.5">Ultra Wideband</div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -382,50 +440,37 @@ function App() {
         </div>
       </div>
 
-      {/* 
-        ========================================================
-        SECTION 2: SOLID CONTENT BLOCKS (NO iPHONE)
-        ========================================================
-      */}
-      <div className="w-full bg-[#050505] relative z-20 flex flex-col items-center border-t border-white/10 shadow-[0_-20px_50px_rgba(0,0,0,1)] overflow-hidden">
-        
-        {/* Dynamic Background Elements */}
-        <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center">
-          {/* Subtle slow pulsing glows */}
+      {/* ═══ SECTION 2: STATIC BLOCKS ═══ */}
+      <div className="w-full bg-[#050505] relative z-20 flex flex-col items-center border-t border-white/10 overflow-hidden">
+
+        <div className="absolute inset-0 pointer-events-none z-0">
           <div className="absolute top-0 left-[-10%] w-[70vw] h-[70vw] rounded-full bg-blue-500/5 blur-[150px] animate-pulse" style={{ animationDuration: '10s' }}></div>
           <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-purple-500/5 blur-[150px] animate-pulse" style={{ animationDuration: '14s', animationDelay: '3s' }}></div>
-          <div className="absolute top-[40%] right-[30%] w-[40vw] h-[40vw] rounded-full bg-white/5 blur-[120px] animate-pulse" style={{ animationDuration: '8s', animationDelay: '1s' }}></div>
-          
-          {/* Premium Grid Pattern Overlay */}
-          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)', backgroundSize: '40px 40px', backgroundPosition: 'center center' }}></div>
-          
-          {/* Vignette to fade edges to black */}
+          <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,#050505_100%)]"></div>
         </div>
 
-        {/* Block A */}
         <div className="w-full flex flex-col items-center text-center py-48 px-6 md:px-16 relative z-10">
-           <h2 className="font-display text-5xl md:text-7xl leading-[0.9] font-bold tracking-tighter uppercase mb-6 text-white drop-shadow-2xl">
-             NOT JUST<br/>A PHONE.
-           </h2>
-           <p className="font-sans text-xs md:text-sm font-light text-gray-400 max-w-2xl leading-loose tracking-wider">
-             We completely re-engineered the logic board, battery chemistry, and thermal architecture to sustain peak performance longer than ever before. 
-           </p>
+          <h2 className="font-display text-5xl md:text-7xl leading-[0.9] font-bold tracking-tighter uppercase mb-6 text-white">
+            NOT JUST<br/>A PHONE.
+          </h2>
+          <p className="font-heading text-xs md:text-sm font-light text-white/50 max-w-2xl leading-loose tracking-wider">
+            A transformative triple-camera system that adds capability without complexity. An unprecedented leap in battery life. A chip that doubles down on machine learning and redefines what a smartphone can do.
+          </p>
         </div>
 
-        {/* Block B (Finale CTA) */}
         <div className="w-full min-h-screen flex flex-col items-center justify-center pb-24 px-6 md:px-16 relative z-10">
-           <h1 className="font-display text-[5rem] md:text-[13rem] font-bold tracking-tighter leading-none uppercase mb-16 text-white drop-shadow-[0_0_50px_rgba(255,255,255,0.1)] mix-blend-screen text-center">
-             BEYOND.
-           </h1>
-           <div className="flex flex-col md:flex-row gap-6 justify-center font-mono uppercase text-sm tracking-widest pointer-events-auto">
-              <button className="px-12 py-6 bg-white text-black hover:bg-gray-200 transition-colors cursor-pointer rounded-none border border-white font-bold">
-                Order Now
-              </button>
-              <button className="px-12 py-6 bg-transparent border border-white text-white hover:bg-white hover:text-black transition-colors cursor-pointer rounded-none">
-                Discover More
-              </button>
-           </div>
+          <h1 className="font-display text-[5rem] md:text-[13rem] font-bold tracking-tighter leading-none uppercase mb-16 text-white drop-shadow-[0_0_50px_rgba(255,255,255,0.1)] mix-blend-screen text-center">
+            BEYOND.
+          </h1>
+          <div className="flex flex-col sm:flex-row items-center gap-4 pointer-events-auto">
+            <button className="bg-white text-black px-8 py-3.5 rounded-full font-heading font-semibold text-xs md:text-sm tracking-wider shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] transition-all duration-300 ease-out cursor-pointer">
+              Order iPhone 11 Pro Max
+            </button>
+            <button className="bg-transparent border border-white/30 text-white px-8 py-3.5 rounded-full font-heading font-medium text-xs md:text-sm tracking-wider hover:bg-white hover:text-black hover:border-white transition-all duration-300 ease-out cursor-pointer">
+              View All Specifications
+            </button>
+          </div>
         </div>
 
       </div>
